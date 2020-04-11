@@ -36,6 +36,7 @@
     <h1 style="font-size: 4.8em">{{$book->name}}</h1>
 
     <p>{{ $book->description }}</p>
+    @include("partials.intro")
 
     @if(count($bookChildren) > 0)
         <ul class="contents">
