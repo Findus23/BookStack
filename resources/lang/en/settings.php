@@ -196,6 +196,7 @@ return [
         'es' => 'Español',
         'es_AR' => 'Español Argentina',
         'fr' => 'Français',
+        'he' => 'עברית',
         'hu' => 'Magyar',
         'it' => 'Italian',
         'ja' => '日本語',
