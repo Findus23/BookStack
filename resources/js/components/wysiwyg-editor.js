@@ -98,21 +98,15 @@ function registerEditorShortcuts(editor) {
 
     // Loop through callout styles
     editor.shortcuts.add('meta+9', '', function() {
-        let selectedNode = editor.selection.getNode();
-        let formats = ['info', 'success', 'warning', 'danger'];
+        const selectedNode = editor.selection.getNode();
+        const callout = selectedNode ? selectedNode.closest('.callout') : null;
 
-        if (!selectedNode || selectedNode.className.indexOf('callout') === -1) {
-            editor.formatter.apply('calloutinfo');
-            return;
-        }
+        const formats = ['info', 'success', 'warning', 'danger'];
+        const currentFormatIndex = formats.findIndex(format => callout && callout.classList.contains(format));
+        const newFormatIndex = (currentFormatIndex + 1) % formats.length;
+        const newFormat = formats[newFormatIndex];
 
-        for (let i = 0; i < formats.length; i++) {
-            if (selectedNode.className.indexOf(formats[i]) === -1) continue;
-            let newFormat = (i === formats.length -1) ? formats[0] : formats[i+1];
-            editor.formatter.apply('callout' + newFormat);
-            return;
-        }
-        editor.formatter.apply('p');
+        editor.formatter.apply('callout' + newFormat);
     });
 
 }
@@ -143,7 +137,7 @@ function codePlugin() {
 
         if (!elemIsCodeBlock(selectedNode)) {
             const providedCode = editor.selection.getNode().textContent;
-            window.vues['code-editor'].open(providedCode, '', (code, lang) => {
+            window.components.first('code-editor').open(providedCode, '', (code, lang) => {
                 const wrap = document.createElement('div');
                 wrap.innerHTML = `<pre><code class="language-${lang}"></code></pre>`;
                 wrap.querySelector('code').innerText = code;
@@ -161,7 +155,7 @@ function codePlugin() {
         let lang = selectedNode.hasAttribute('data-lang') ? selectedNode.getAttribute('data-lang') : '';
         let currentCode = selectedNode.querySelector('textarea').textContent;
 
-        window.vues['code-editor'].open(currentCode, lang, (code, lang) => {
+        window.components.first('code-editor').open(currentCode, lang, (code, lang) => {
             const editorElem = selectedNode.querySelector('.CodeMirror');
             const cmInstance = editorElem.CodeMirror;
             if (cmInstance) {
@@ -408,6 +402,10 @@ function listenForBookStackEditorEvents(editor) {
         editor.setContent(content);
     });
 
+    // Focus on the editor
+    window.$events.listen('editor::focus', () => {
+        editor.focus();
+    });
 }
 
 class WysiwygEditor {

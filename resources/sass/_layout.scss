@@ -49,6 +49,9 @@
   &.v-center {
     align-items: center;
   }
+  &.v-end {
+    align-items: end;
+  }
   &.no-gap {
     grid-row-gap: 0;
     grid-column-gap: 0;
@@ -145,7 +148,7 @@ body.flexbox {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .float {
@@ -188,12 +191,12 @@ body.flexbox {
 /**
  * Fixes
  */
-.clearfix:before,
-.clearfix:after {
+.clearfix::before,
+.clearfix::after {
   content: " ";
   display: table;
 }
-.clearfix:after {
+.clearfix::after {
   clear: both;
 }
 
