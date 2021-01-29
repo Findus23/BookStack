@@ -1,9 +1,11 @@
 <?php namespace BookStack\Auth\Access;
 
+use BookStack\Actions\ActivityType;
 use BookStack\Auth\SocialAccount;
 use BookStack\Auth\User;
 use BookStack\Auth\UserRepo;
 use BookStack\Exceptions\UserRegistrationException;
+use BookStack\Facades\Activity;
 use Exception;
 
 class RegistrationService
@@ -57,7 +59,7 @@ class RegistrationService
         // Ensure user does not already exist
         $alreadyUser = !is_null($this->userRepo->getByEmail($userEmail));
         if ($alreadyUser) {
-            throw new UserRegistrationException(trans('errors.error_user_exists_different_creds', ['email' => $userEmail]));
+            throw new UserRegistrationException(trans('errors.error_user_exists_different_creds', ['email' => $userEmail]), '/login');
         }
 
         // Create the user
@@ -68,18 +70,20 @@ class RegistrationService
             $newUser->socialAccounts()->save($socialAccount);
         }
 
+        Activity::add(ActivityType::AUTH_REGISTER, $socialAccount ?? $newUser);
+
         // Start email confirmation flow if required
         if ($this->emailConfirmationService->confirmationRequired() && !$emailConfirmed) {
             $newUser->save();
-            $message = '';
 
             try {
                 $this->emailConfirmationService->sendConfirmation($newUser);
+                session()->flash('sent-email-confirmation', true);
             } catch (Exception $e) {
                 $message = trans('auth.email_confirm_send_error');
+                throw new UserRegistrationException($message, '/register/confirm');
             }
 
-            throw new UserRegistrationException($message, '/register/confirm');
         }
 
         return $newUser;
